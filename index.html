@@ -1,93 +1,778 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#123b32">
-  <title>부산 안심놀이터 지도</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obRCB9BMY=" crossorigin="">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow - 공부 시간 관리</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, "Malgun Gothic", sans-serif;
+    background: #f4f6fb;
+    color: #263247;
+    padding: 30px;
+}
+
+.container {
+    max-width: 1250px;
+    margin: auto;
+}
+
+header {
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 30px;
+    color: #253b70;
+}
+
+header p {
+    color: #8993a5;
+    margin-top: 8px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 23px;
+    box-shadow: 0 3px 12px #1725540c;
+}
+
+.stat-card p {
+    color: #8b95a7;
+    font-size: 14px;
+}
+
+.stat-card h2 {
+    margin-top: 13px;
+    font-size: 27px;
+    color: #3159bd;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 22px;
+}
+
+.panel {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 3px 12px #1725540c;
+}
+
+.panel h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.month-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.month-control button {
+    border: none;
+    background: #edf2ff;
+    color: #3159bd;
+    padding: 9px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 17px;
+}
+
+.weekdays, .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 7px;
+}
+
+.weekdays div {
+    text-align: center;
+    padding: 10px 0;
+    color: #8993a5;
+    font-size: 13px;
+}
+
+.day {
+    min-height: 85px;
+    border: 1px solid #edf0f5;
+    border-radius: 9px;
+    padding: 9px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.day:hover {
+    background: #edf3ff;
+    border-color: #7898e8;
+}
+
+.day.selected {
+    border: 2px solid #4169d8;
+    background: #f0f4ff;
+}
+
+.day.today {
+    background: #f5f8ff;
+}
+
+.day .number {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.day .hours {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #4169d8;
+    line-height: 1.6;
+}
+
+.other-month {
+    opacity: .3;
+}
+
+.record {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f5;
+}
+
+.record h3 {
+    margin-bottom: 15px;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 13px;
+    color: #778195;
+    margin-bottom: 7px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dce2ed;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: #4169d8;
+}
+
+.save-btn {
+    width: 100%;
+    background: #4169d8;
+    color: white;
+    border: none;
+    border-radius: 9px;
+    padding: 13px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.save-btn:hover {
+    background: #3154b8;
+}
+
+.record-list {
+    margin-top: 17px;
+}
+
+.record-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #edf0f5;
+    font-size: 14px;
+}
+
+.record-item button {
+    border: none;
+    background: #fff0f0;
+    color: #e05c5c;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.chart-panel {
+    margin-top: 22px;
+}
+
+.chart-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.chart-buttons button {
+    padding: 9px 15px;
+    border: 1px solid #dce2ed;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+}
+
+.chart-buttons button.active {
+    background: #4169d8;
+    color: white;
+    border-color: #4169d8;
+}
+
+.chart-area {
+    position: relative;
+    height: 280px;
+}
+
+.subject-stats {
+    margin-top: 22px;
+}
+
+.subject-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #edf0f5;
+}
+
+@media(max-width:850px) {
+    body { padding: 15px; }
+    .main { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media(max-width:450px) {
+    .day { min-height: 65px; padding: 5px; }
+    .day .hours { font-size: 9px; }
+    .panel { padding: 15px; }
+}
+</style>
 </head>
+
 <body>
-  <header class="topbar">
-    <a class="brand" href="#"><span class="brand-icon">✓</span><span>부산 안심놀이터</span></a>
-    <span class="top-label">어린이놀이시설 공공데이터 탐색</span>
-  </header>
+<div class="container">
 
-  <main class="page">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">BUSAN PLAYGROUND SAFETY MAP</p>
-        <h1>우리 동네 놀이터,<br><span>안전정보를 확인하세요.</span></h1>
-        <p class="hero-desc">설치일자와 안전검사 종류, 물놀이형 시설 여부 및 운영정보를 한곳에서 확인할 수 있습니다.</p>
-      </div>
-      <div class="hero-art" aria-hidden="true"><span>♧</span><span>＋</span><span>⌂</span></div>
-    </section>
+<header>
+    <h1>StudyFlow 📚</h1>
+    <p>나의 공부 시간을 기록하고 분석하는 스마트 학습 관리</p>
+</header>
 
-    <section class="notice" role="note">
-      <strong>안전정보 이용 안내</strong>
-      <p>설치일자나 ‘설치검사’ 표시는 현재 안전을 보증하지 않습니다. 실제 검사 결과·정기검사 이력은 공식 자료에서 추가 확인하세요. 제공된 예시에는 위도·경도가 없어 지도에 정확한 시설 핀을 표시하지 않으며, 주소 검색 링크를 제공합니다.</p>
-    </section>
+<!-- 통계 카드 -->
+<div class="stats">
 
-    <section class="stats" aria-label="시설 요약">
-      <article class="stat-card"><span>검색 결과</span><strong id="totalCount">0</strong><small>개 시설</small></article>
-      <article class="stat-card"><span>운영 중</span><strong id="operatingCount">0</strong><small>개 시설</small></article>
-      <article class="stat-card"><span>물놀이형</span><strong id="waterCount">0</strong><small>개 시설</small></article>
-      <article class="stat-card"><span>추가 확인 필요</span><strong id="checkCount">0</strong><small>개 시설 · 제공 정보 기준</small></article>
-    </section>
+    <div class="stat-card">
+        <p>전체 공부 시간</p>
+        <h2 id="totalHours">0시간</h2>
+    </div>
 
-    <section class="workspace">
-      <div class="panel filters">
-        <div class="panel-heading"><div><p class="eyebrow">FIND A PLAYGROUND</p><h2>시설 찾기</h2></div><button id="resetBtn" class="text-button" type="button">초기화</button></div>
-        <label for="searchInput">시설명 또는 주소</label>
-        <input id="searchInput" type="search" placeholder="예: 연산, 세병로, 놀이터">
-        <label for="districtFilter">구·군</label>
-        <select id="districtFilter"><option value="">부산 전체</option></select>
-        <label for="dongFilter">동</label>
-        <select id="dongFilter"><option value="">전체 동</option></select>
-        <label for="waterFilter">물놀이형 놀이시설</label>
-        <select id="waterFilter"><option value="">전체</option><option value="포함">포함</option><option value="미포함">미포함</option></select>
-        <label for="operationFilter">운영구분</label>
-        <select id="operationFilter"><option value="">전체</option><option value="운영">운영</option><option value="미운영">미운영</option></select>
-        <label for="yearFilter">설치 연도</label>
-        <select id="yearFilter"><option value="">전체 연도</option></select>
-        <div class="filter-note">※ 동 정보는 주소에 ‘○○동’이 명시된 경우에만 자동 분류합니다.</div>
-      </div>
+    <div class="stat-card">
+        <p>국어 공부 시간</p>
+        <h2 id="koreanHours">0시간</h2>
+    </div>
 
-      <div class="panel map-panel">
-        <div class="panel-heading map-heading"><div><p class="eyebrow">INTERACTIVE MAP</p><h2>부산 시설 지도</h2></div><span class="map-chip"><i></i> 주소 확인</span></div>
-        <div id="map" aria-label="부산광역시 지도"></div>
-        <div class="map-caption"><span class="legend-dot"></span> 시설 좌표가 제공되면 지도 핀이 표시됩니다. 현재 예시 데이터는 주소 검색으로 확인할 수 있습니다.</div>
-      </div>
-    </section>
+    <div class="stat-card">
+        <p>영어 공부 시간</p>
+        <h2 id="englishHours">0시간</h2>
+    </div>
 
-    <section class="panel list-panel">
-      <div class="panel-heading list-heading"><div><p class="eyebrow">PLAYGROUND DIRECTORY</p><h2>놀이시설 목록</h2><p class="subtext">시설을 선택하면 세부 정보와 주소 검색을 확인할 수 있습니다.</p></div><span id="resultLabel" class="result-label">0개 결과</span></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>놀이시설명</th><th>주소</th><th>설치일자</th><th>물놀이형</th><th>운영</th><th>상세</th></tr></thead>
-          <tbody id="facilityRows"></tbody>
-        </table>
-      </div>
-      <div id="emptyState" class="empty-state" hidden>검색 조건에 맞는 시설이 없습니다.</div>
-    </section>
-    <footer>
-      <p>자료 예시: 사용자가 제공한 부산광역시 어린이놀이시설 데이터 5건</p>
-      <p>지도: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · 지도 라이브러리: Leaflet</p>
-      <p>이 웹사이트는 정보 탐색을 돕는 시범 서비스이며, 공식 안전 인증 또는 실시간 점검 시스템이 아닙니다.</p>
-    </footer>
-  </main>
+    <div class="stat-card">
+        <p>수학 공부 시간</p>
+        <h2 id="mathHours">0시간</h2>
+    </div>
 
-  <dialog id="detailDialog" class="detail-dialog">
-    <div class="dialog-head"><div><p class="eyebrow">FACILITY DETAILS</p><h2 id="detailName">시설 상세정보</h2></div><button id="closeDialog" class="close-button" aria-label="닫기">×</button></div>
-    <div id="detailContent" class="detail-content"></div>
-    <a id="addressLink" class="primary-button" href="#" target="_blank" rel="noopener">지도에서 주소 검색 ↗</a>
-  </dialog>
+</div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+<div class="main">
+
+<!-- 달력 영역 -->
+<div class="panel">
+
+    <h2>📅 공부 기록 달력</h2>
+
+    <div class="month-control">
+        <button onclick="changeMonth(-1)">◀</button>
+        <h3 id="monthTitle"></h3>
+        <button onclick="changeMonth(1)">▶</button>
+    </div>
+
+    <div class="weekdays">
+        <div>일</div>
+        <div>월</div>
+        <div>화</div>
+        <div>수</div>
+        <div>목</div>
+        <div>금</div>
+        <div>토</div>
+    </div>
+
+    <div class="calendar" id="calendar"></div>
+
+    <!-- 공부 시간 입력 -->
+    <div class="record">
+
+        <h3 id="selectedDateTitle">날짜를 선택하세요</h3>
+
+        <div class="input-row">
+
+            <div class="input-group">
+                <label>과목</label>
+                <select id="subject">
+                    <option value="국어">국어</option>
+                    <option value="영어">영어</option>
+                    <option value="수학">수학</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>공부 시간 (시간)</label>
+                <input type="number" id="hours"
+                       min="0.1" max="24" step="0.1"
+                       placeholder="예: 2">
+            </div>
+
+        </div>
+
+        <button class="save-btn" onclick="addRecord()">
+            + 공부 시간 기록하기
+        </button>
+
+        <div class="record-list" id="recordList"></div>
+
+    </div>
+</div>
+
+<!-- 분석 영역 -->
+<div>
+
+    <div class="panel">
+        <h2>📊 공부 시간 분석</h2>
+
+        <div class="chart-buttons">
+            <button id="barBtn" class="active"
+                    onclick="changeChart('bar')">
+                막대그래프
+            </button>
+
+            <button id="pieBtn"
+                    onclick="changeChart('pie')">
+                원형 그래프
+            </button>
+        </div>
+
+        <div class="chart-area">
+            <canvas id="studyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="panel chart-panel">
+        <h2>📈 학습 통계</h2>
+
+        <div class="subject-stats">
+
+            <div class="subject-row">
+                <span>하루 평균 공부 시간</span>
+                <strong id="averageHours">0시간</strong>
+            </div>
+
+            <div class="subject-row">
+                <span>가장 많이 공부한 과목</span>
+                <strong id="bestSubject">-</strong>
+            </div>
+
+            <div class="subject-row">
+                <span>공부 기록 일수</span>
+                <strong id="studyDays">0일</strong>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</div>
+</div>
+
+<script>
+
+// 현재 날짜
+let currentDate = new Date();
+
+let selectedDate = getDateKey(new Date());
+
+let chartType = 'bar';
+
+let chart = null;
+
+// 저장된 공부 기록 불러오기
+let records = JSON.parse(
+    localStorage.getItem('studyRecords') || '{}'
+);
+
+// 날짜를 YYYY-MM-DD 형식으로 변환
+function getDateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth()+1).padStart(2,'0');
+    const d = String(date.getDate()).padStart(2,'0');
+
+    return `${y}-${m}-${d}`;
+}
+
+// 데이터 저장
+function saveData() {
+    localStorage.setItem(
+        'studyRecords',
+        JSON.stringify(records)
+    );
+}
+
+// 달력 생성
+function renderCalendar() {
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    document.getElementById('monthTitle').textContent =
+        `${year}년 ${month+1}월`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+
+    const lastDate = new Date(year, month+1, 0).getDate();
+
+    const calendar = document.getElementById('calendar');
+
+    calendar.innerHTML = '';
+
+    for(let i=0; i<firstDay; i++) {
+        const empty = document.createElement('div');
+        calendar.appendChild(empty);
+    }
+
+    for(let day=1; day<=lastDate; day++) {
+
+        const date = new Date(year, month, day);
+        const key = getDateKey(date);
+
+        const div = document.createElement('div');
+
+        div.className = 'day';
+
+        if(key === selectedDate) {
+            div.classList.add('selected');
+        }
+
+        if(key === getDateKey(new Date())) {
+            div.classList.add('today');
+        }
+
+        const dayRecords = records[key] || {};
+
+        let total = Object.values(dayRecords)
+            .reduce((a,b)=>a+b,0);
+
+        div.innerHTML = `
+            <div class="number">${day}</div>
+            <div class="hours">
+                ${total > 0 ? total + '시간' : ''}
+            </div>
+        `;
+
+        div.onclick = () => {
+            selectedDate = key;
+            renderCalendar();
+            renderRecords();
+        };
+
+        calendar.appendChild(div);
+    }
+
+    document.getElementById('selectedDateTitle').textContent =
+        selectedDate + ' 공부 기록';
+}
+
+// 월 이동
+function changeMonth(value) {
+
+    currentDate.setMonth(
+        currentDate.getMonth() + value
+    );
+
+    renderCalendar();
+}
+
+// 공부 시간 추가
+function addRecord() {
+
+    const subject = document.getElementById('subject').value;
+
+    const hours = Number(
+        document.getElementById('hours').value
+    );
+
+    if(!selectedDate) {
+        alert('날짜를 먼저 선택하세요.');
+        return;
+    }
+
+    if(!Number.isFinite(hours) || hours <= 0 || hours > 24) {
+        alert('0보다 크고 24 이하의 시간을 입력하세요.');
+        return;
+    }
+
+    if(!records[selectedDate]) {
+        records[selectedDate] = {};
+    }
+
+    if(!records[selectedDate][subject]) {
+        records[selectedDate][subject] = 0;
+    }
+
+    records[selectedDate][subject] += hours;
+
+    saveData();
+
+    document.getElementById('hours').value = '';
+
+    renderCalendar();
+    renderRecords();
+    updateStats();
+}
+
+// 선택한 날짜의 기록 표시
+function renderRecords() {
+
+    const list = document.getElementById('recordList');
+
+    const data = records[selectedDate] || {};
+
+    list.innerHTML = '';
+
+    Object.keys(data).forEach(subject => {
+
+        const div = document.createElement('div');
+
+        div.className = 'record-item';
+
+        const name = document.createElement('strong');
+        name.textContent = subject + ' : ' + data[subject] + '시간';
+
+        const button = document.createElement('button');
+        button.textContent = '삭제';
+
+        button.onclick = () => {
+
+            if(confirm(subject + ' 기록을 삭제할까요?')) {
+
+                delete records[selectedDate][subject];
+
+                if(Object.keys(records[selectedDate]).length === 0) {
+                    delete records[selectedDate];
+                }
+
+                saveData();
+
+                renderCalendar();
+                renderRecords();
+                updateStats();
+            }
+        };
+
+        div.appendChild(name);
+        div.appendChild(button);
+
+        list.appendChild(div);
+    });
+}
+
+// 과목별 통계 계산
+function calculateStats() {
+
+    const totals = {
+        '국어': 0,
+        '영어': 0,
+        '수학': 0
+    };
+
+    Object.values(records).forEach(day => {
+
+        Object.keys(day).forEach(subject => {
+
+            if(totals[subject] !== undefined) {
+                totals[subject] += day[subject];
+            }
+
+        });
+
+    });
+
+    return totals;
+}
+
+// 통계 업데이트
+function updateStats() {
+
+    const totals = calculateStats();
+
+    const total =
+        totals['국어'] +
+        totals['영어'] +
+        totals['수학'];
+
+    document.getElementById('totalHours').textContent =
+        total + '시간';
+
+    document.getElementById('koreanHours').textContent =
+        totals['국어'] + '시간';
+
+    document.getElementById('englishHours').textContent =
+        totals['영어'] + '시간';
+
+    document.getElementById('mathHours').textContent =
+        totals['수학'] + '시간';
+
+    const dates = Object.keys(records).filter(date =>
+        Object.values(records[date]).some(v => v > 0)
+    );
+
+    const average = dates.length ? total / dates.length : 0;
+
+    document.getElementById('averageHours').textContent =
+        average.toFixed(1) + '시간';
+
+    document.getElementById('studyDays').textContent =
+        dates.length + '일';
+
+    const best = Object.entries(totals)
+        .sort((a,b)=>b[1]-a[1])[0];
+
+    document.getElementById('bestSubject').textContent =
+        best && best[1] > 0 ? best[0] : '-';
+
+    updateChart(totals);
+}
+
+// 그래프 생성
+function updateChart(totals) {
+
+    const ctx = document.getElementById('studyChart');
+
+    if(chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+
+        type: chartType,
+
+        data: {
+
+            labels: ['국어', '영어', '수학'],
+
+            datasets: [{
+
+                label: '공부 시간',
+
+                data: [
+                    totals['국어'],
+                    totals['영어'],
+                    totals['수학']
+                ],
+
+                backgroundColor: [
+                    '#5279d8',
+                    '#37b9a1',
+                    '#f3b74d'
+                ],
+
+                borderRadius: 8,
+
+                borderWidth: 1
+
+            }]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+                    display: chartType === 'pie'
+                }
+
+            },
+
+            scales: chartType === 'bar' ? {
+
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '공부 시간'
+                    }
+                }
+
+            } : {}
+
+        }
+
+    });
+}
+
+// 그래프 종류 변경
+function changeChart(type) {
+
+    chartType = type;
+
+    document.getElementById('barBtn')
+        .classList.toggle('active', type === 'bar');
+
+    document.getElementById('pieBtn')
+        .classList.toggle('active', type === 'pie');
+
+    updateStats();
+}
+
+// 최초 실행
+renderCalendar();
+renderRecords();
+updateStats();
+
+</script>
+
 </body>
 </html>
