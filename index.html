@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#123b32">
+  <title>부산 안심놀이터 지도</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obRCB9BMY=" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-icon">✓</span><span>부산 안심놀이터</span></a>
+    <span class="top-label">어린이놀이시설 공공데이터 탐색</span>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">BUSAN PLAYGROUND SAFETY MAP</p>
+        <h1>우리 동네 놀이터,<br><span>안전정보를 확인하세요.</span></h1>
+        <p class="hero-desc">설치일자와 안전검사 종류, 물놀이형 시설 여부 및 운영정보를 한곳에서 확인할 수 있습니다.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><span>♧</span><span>＋</span><span>⌂</span></div>
+    </section>
+
+    <section class="notice" role="note">
+      <strong>안전정보 이용 안내</strong>
+      <p>설치일자나 ‘설치검사’ 표시는 현재 안전을 보증하지 않습니다. 실제 검사 결과·정기검사 이력은 공식 자료에서 추가 확인하세요. 제공된 예시에는 위도·경도가 없어 지도에 정확한 시설 핀을 표시하지 않으며, 주소 검색 링크를 제공합니다.</p>
+    </section>
+
+    <section class="stats" aria-label="시설 요약">
+      <article class="stat-card"><span>검색 결과</span><strong id="totalCount">0</strong><small>개 시설</small></article>
+      <article class="stat-card"><span>운영 중</span><strong id="operatingCount">0</strong><small>개 시설</small></article>
+      <article class="stat-card"><span>물놀이형</span><strong id="waterCount">0</strong><small>개 시설</small></article>
+      <article class="stat-card"><span>추가 확인 필요</span><strong id="checkCount">0</strong><small>개 시설 · 제공 정보 기준</small></article>
+    </section>
+
+    <section class="workspace">
+      <div class="panel filters">
+        <div class="panel-heading"><div><p class="eyebrow">FIND A PLAYGROUND</p><h2>시설 찾기</h2></div><button id="resetBtn" class="text-button" type="button">초기화</button></div>
+        <label for="searchInput">시설명 또는 주소</label>
+        <input id="searchInput" type="search" placeholder="예: 연산, 세병로, 놀이터">
+        <label for="districtFilter">구·군</label>
+        <select id="districtFilter"><option value="">부산 전체</option></select>
+        <label for="dongFilter">동</label>
+        <select id="dongFilter"><option value="">전체 동</option></select>
+        <label for="waterFilter">물놀이형 놀이시설</label>
+        <select id="waterFilter"><option value="">전체</option><option value="포함">포함</option><option value="미포함">미포함</option></select>
+        <label for="operationFilter">운영구분</label>
+        <select id="operationFilter"><option value="">전체</option><option value="운영">운영</option><option value="미운영">미운영</option></select>
+        <label for="yearFilter">설치 연도</label>
+        <select id="yearFilter"><option value="">전체 연도</option></select>
+        <div class="filter-note">※ 동 정보는 주소에 ‘○○동’이 명시된 경우에만 자동 분류합니다.</div>
+      </div>
+
+      <div class="panel map-panel">
+        <div class="panel-heading map-heading"><div><p class="eyebrow">INTERACTIVE MAP</p><h2>부산 시설 지도</h2></div><span class="map-chip"><i></i> 주소 확인</span></div>
+        <div id="map" aria-label="부산광역시 지도"></div>
+        <div class="map-caption"><span class="legend-dot"></span> 시설 좌표가 제공되면 지도 핀이 표시됩니다. 현재 예시 데이터는 주소 검색으로 확인할 수 있습니다.</div>
+      </div>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="panel-heading list-heading"><div><p class="eyebrow">PLAYGROUND DIRECTORY</p><h2>놀이시설 목록</h2><p class="subtext">시설을 선택하면 세부 정보와 주소 검색을 확인할 수 있습니다.</p></div><span id="resultLabel" class="result-label">0개 결과</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>놀이시설명</th><th>주소</th><th>설치일자</th><th>물놀이형</th><th>운영</th><th>상세</th></tr></thead>
+          <tbody id="facilityRows"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" class="empty-state" hidden>검색 조건에 맞는 시설이 없습니다.</div>
+    </section>
+    <footer>
+      <p>자료 예시: 사용자가 제공한 부산광역시 어린이놀이시설 데이터 5건</p>
+      <p>지도: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · 지도 라이브러리: Leaflet</p>
+      <p>이 웹사이트는 정보 탐색을 돕는 시범 서비스이며, 공식 안전 인증 또는 실시간 점검 시스템이 아닙니다.</p>
+    </footer>
+  </main>
+
+  <dialog id="detailDialog" class="detail-dialog">
+    <div class="dialog-head"><div><p class="eyebrow">FACILITY DETAILS</p><h2 id="detailName">시설 상세정보</h2></div><button id="closeDialog" class="close-button" aria-label="닫기">×</button></div>
+    <div id="detailContent" class="detail-content"></div>
+    <a id="addressLink" class="primary-button" href="#" target="_blank" rel="noopener">지도에서 주소 검색 ↗</a>
+  </dialog>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
